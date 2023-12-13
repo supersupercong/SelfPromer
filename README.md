@@ -1,4 +1,4 @@
-# SelfPromer
+# AAAI24-SelfPromer: Self-Prompt Dehazing Transformers with Depth-Consistency
 
 AAAI24-SelfPromer: Self-Prompt Dehazing Transformers with Depth-Consistency
 
