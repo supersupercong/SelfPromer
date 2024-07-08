@@ -2,7 +2,7 @@
 
 This is the official PyTorch codes for the paper  
 [Selfpromer: Self-prompt dehazing transformers with depth-consistency](https://ojs.aaai.org/index.php/AAAI/article/view/28340)  
-[Cong Wang](https://scholar.google.com/citations?user=0DrHHRwAAAAJ&hl=zh-CN), [Jinshan Pan](https://jspan.github.io/), [Wanyu Lin](https://scholar.google.com/citations?hl=zh-CN&user=vgLANV0AAAAJ), [Jiangxin Dong](https://scholar.google.com/citations?hl=zh-CN&user=ruebFVEAAAAJ), Wei Wang,  Mengzhu Wang, [Xiao-Ming Wu](https://www4.comp.polyu.edu.hk/~csxmwu/)
+[Cong Wang](https://scholar.google.com/citations?user=0DrHHRwAAAAJ&hl=zh-CN), [Jinshan Pan](https://jspan.github.io/), [Wanyu Lin](https://scholar.google.com/citations?hl=zh-CN&user=vgLANV0AAAAJ), [Jiangxin Dong](https://scholar.google.com/citations?hl=zh-CN&user=ruebFVEAAAAJ), Wei Wang, [Xiao-Ming Wu](https://www4.comp.polyu.edu.hk/~csxmwu/)
 
 ## Abstract
 This work presents an effective depth-consistency Self-Prompt Transformer, terms as SelfPromer, for image dehazing. It is motivated by an observation that the estimated depths of an image with haze residuals and its clear counterpart vary. 
@@ -14,6 +14,7 @@ Extensive experiments show that our SelfPromer performs favorably against the st
 
 ## Motivation
 ![framework_img](imgs/motivation.png)
+
 Haze residuals pose a signifcant challenge to accurately estimating the depth of clear images, creating inconsistencies
 compared to hazy images. A difference map (e) is utilized to locate haze residuals on the estimated depth, while minimal haze
 residuals will result in consistent estimates. By analyzing the difference map, we can identify the impact of haze residuals,
@@ -22,6 +23,7 @@ The difference map (e) is derived by |hazy depth − clear depth| with equalizat
 
 ## Overall of SelfPromer at Training Stage
 ![framework_img](imgs/overall.png)
+
 SelfPromer at training stage. Our method comprises two branches: prompt branch and self-prompt dehazing Transformer branch. 
 The prompt branch generates a prompt by using the deep depth difference and deep feature extracted from the hazy input. 
 The other branch exploits the generated prompt to guide the deep model for image dehazing. 
@@ -31,6 +33,7 @@ The proposed modules are formulated into an encoder-decoder architecture based o
 
 ## Overall of SelfPromer at Inference Stage
 ![DualCMT](imgs/inference.png)
+
 Continuous Self-Prompt Inference. i-th prompt inference contains four steps: Sequential execution from top to bottom. 
 The magenta line describes the ‘self’ process that builds the prompt from the hazy image itself.
 
