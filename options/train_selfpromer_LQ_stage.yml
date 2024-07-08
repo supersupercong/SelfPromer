@@ -1,0 +1,190 @@
+# general settings
+name: 014_FeMaSR_LQ_stage
+# name: debug_FeMaSR
+model_type: FeMaSRModel
+scale: &upscale 1
+num_gpu: 1 # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: General_Image_Train
+    type: PairedImageDataset
+#    dataroot_gt: ../datasets/HQ_sub
+    # type: PairedImageDataset
+    dataroot_gt: /data/wangcong/dataset/haze_dataset/ITS_single/gt
+    dataroot_lq: /data/wangcong/dataset/haze_dataset/ITS_single/haze
+    io_backend:
+      type: disk
+
+    model_type: DPT_Next_ViT_L_384   #DPT_Next_ViT_L_384, MiDaS_small, DPT_Hybrid
+
+    gt_size: 256
+    use_resize_crop: False
+    use_flip: True
+    use_rot: True
+
+    # data loader
+    use_shuffle: true
+    batch_size_per_gpu: &bsz 10
+    num_worker_per_gpu: *bsz
+    dataset_enlarge_ratio: 1
+
+    prefetch_mode: cpu
+    num_prefetch_queue: *bsz
+
+  val:
+    name: General_Image_Valid
+    type: BSRGANTrainDataset
+    dataroot_gt: ~
+    dataroot_lq: ~
+    crop_eval_size: 256
+    gt_size: 256
+    model_type: DPT_Next_ViT_L_384
+    io_backend:
+      type: disk
+#    gt_size: 256
+
+    use_resize_crop: False
+    use_flip: False
+    use_rot: False
+
+# network structures
+network_g:
+  type: FeMaSRNet
+  gt_resolution: 256
+  norm_type: 'gn'
+  act_type: 'silu'
+  scale_factor: *upscale
+  codebook_params: # has to order from low to high
+    - [32, 1024, 512]
+  ################ analysis #####################
+  position: 'depth'
+  prompt: True
+  n_layers: 10 # layers of transformer
+  depth_guide: 'prompt'
+  use_residual: True
+  ################ analysis #####################
+  LQ_stage: true
+  frozen_module_keywords: ['quantize', 'decoder', 'after_quant_group', 'out_conv']
+
+network_d:
+  type: UNetDiscriminatorSN
+  num_in_ch: 3
+
+# path
+path:
+  pretrain_network_hq: /data1/wangcong/ICCV23/FeMaSR_HRP_model_g.pth
+  pretrain_network_g: /data1/wangcong/ICCV23/1244FeMaSR-main/experiments/014_FeMaSR_LQ_stage/models/net_g_180000.pth
+  pretrain_network_d: /data1/wangcong/ICCV23/1244FeMaSR-main/experiments/014_FeMaSR_LQ_stage/models/net_d_180000.pth
+  strict_load: false
+  resume_state: /data1/wangcong/ICCV23/1244FeMaSR-main/experiments/014_FeMaSR_LQ_stage/training_states/180000.state
+  training_states: /data1/wangcong/ICCV23/1244FeMaSR-main/experiments/014_FeMaSR_LQ_stage/training_states/180000.state
+# training settings
+train:
+  optim_g:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+  optim_d:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+
+  scheduler:
+    type: MultiStepLR
+    # milestones: [50000, 100000, 200000, 300000]
+    # gamma: 1
+    milestones: [80000, 160000, 24000]
+    gamma: 0.5
+
+  total_iter: 402000
+  warmup_iter: -1  # no warm up
+
+  # losses
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1.0
+    reduction: mean
+
+  pixel_woprompt_opt:
+    type: L1Loss
+    loss_weight: 0.1
+    reduction: mean
+
+#  codebook_woprompt_opt:
+#    type: L1Loss
+#    loss_weight: 0.1
+#    reduction: mean
+#
+#  ssim_woprompt_opt:
+#    loss_weight: 0.1
+#
+#  perceptual_woprompt_opt:
+#    type: LPIPSLoss
+#    loss_weight: !!float 0.1
+
+  perceptual_opt:
+    type: LPIPSLoss
+    loss_weight: !!float 1.0
+
+  gan_opt:
+    type: GANLoss
+    gan_type: hinge
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: 0.1
+
+  codebook_opt:
+    loss_weight: 1
+
+  codebook_second_opt:
+    loss_weight: 1
+
+  ssim_loss_opt:
+    loss_weight: 0.4
+
+  semantic_opt:
+    loss_weight: 0.1
+
+  net_d_iters: 1
+  net_d_init_iters: !!float 0
+
+# validation settings·
+val:
+  val_freq: !!float 5e3 #5e3
+  save_img: true
+
+  key_metric: lpips
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: psnr
+      crop_border: 4
+      test_y_channel: true
+    ssim:
+      type: ssim
+      crop_border: 4
+      test_y_channel: true
+    lpips:
+      type: lpips
+      better: lower
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 1e9
+  save_latest_freq: !!float 1e4
+  show_tf_imgs_freq: !!float 5e3
+  use_tb_logger: true
+
+# wandb:
+    # project: ESRGAN
+    # resume_id: ~
+
+# dist training settings
+# dist_params:
+  # backend: nccl
+  # port: 16500 #29500
