@@ -51,6 +51,20 @@ The magenta line describes the ‘self’ process that builds the prompt from th
 <img src="imgs/table_real.png" width="100%">
 <img src="imgs/figure_real.png" width="100%">
 
+## Analysis and Discussion
+
+### Effectiveness on prompt
+<img src="imgs/effectiveness_prompt.png" width="100%">
+
+### Effectiveness on continuous self-prompt inference on a real-world example
+<img src="imgs/effectiveness_contious_inference.png" width="100%">
+
+### Effectiveness on continuous depth-consistency
+<img src="imgs/depth_consistency.png" width="100%">
+
+## Applications to Low-light Image Enhancement
+<img src="imgs/application_lie.png" width="100%">
+
 ## Dependencies and Installation
 
 - Ubuntu >= 18.04
